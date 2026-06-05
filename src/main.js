@@ -92,7 +92,6 @@ const pathInput      = document.getElementById("pathInput");
 const scanBtn        = document.getElementById("scanBtn");
 const showHidden     = document.getElementById("showHidden");
 const collapseAllBtn = document.getElementById("collapseAll");
-const expandAllBtn   = document.getElementById("expandAll");
 const statsBar       = document.getElementById("statsBar");
 const statSize       = document.getElementById("statSize");
 const statFiles      = document.getElementById("statFiles");
@@ -129,7 +128,6 @@ let currentData        = null;
 let domNodes           = new Map();   // path -> { wrapper, childrenContainer, hasChildren, depth }
 let totalRenderedNodes = 0;
 let loadingPaths       = new Set();   // paths currently being loaded from backend
-const MAX_EXPAND_NODES = 3000;
 
 // ═══════════════════════════════════════════════════════════════════
 // HELPERS
@@ -358,67 +356,8 @@ function hideTooltip() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// EXPAND / COLLAPSE ALL
+// COLLAPSE ALL
 // ═══════════════════════════════════════════════════════════════════
-
-async function expandAll() {
-  if (!currentData) return;
-  const start = totalRenderedNodes;
-  let changed = true;
-  let safety = 0;
-
-  while (changed && safety < 60) {
-    changed = false;
-    safety++;
-    const pending = [];
-
-    for (const [path, node] of domNodes) {
-      if (totalRenderedNodes - start >= MAX_EXPAND_NODES) break;
-      if (!node.hasChildren || !node.childrenContainer) continue;
-      if (node.childrenContainer.classList.contains("expanded")) continue;
-      if (loadingPaths.has(path)) continue;
-      pending.push({ path, node });
-    }
-
-    if (pending.length === 0) break;
-
-    const CHUNK = 8; // smaller chunks since each involves a backend call
-    for (let i = 0; i < pending.length; i += CHUNK) {
-      if (totalRenderedNodes - start >= MAX_EXPAND_NODES) break;
-      const chunk = pending.slice(i, i + CHUNK);
-
-      // Fire backend calls in parallel for this chunk
-      const results = await Promise.allSettled(
-        chunk.map(({ path, node }) =>
-          invoke("expand_directory", { path, showHidden: showHidden.checked })
-            .then(kids => ({ path, node, kids }))
-        )
-      );
-
-      for (const r of results) {
-        if (r.status !== "fulfilled") continue;
-        const { path, node, kids } = r.value;
-        if (totalRenderedNodes - start >= MAX_EXPAND_NODES) break;
-        if (node.childrenContainer.children.length === 0 && kids.length > 0) {
-          renderTree(node.childrenContainer, kids, node.depth + 1);
-        }
-        node.childrenContainer.classList.add("expanded");
-        const tgl = node.wrapper.querySelector(".node-toggle");
-        if (tgl) tgl.classList.add("expanded");
-        changed = true;
-      }
-
-      await new Promise(r => requestAnimationFrame(r));
-    }
-  }
-
-  if (totalRenderedNodes - start >= MAX_EXPAND_NODES) {
-    showToast(
-      `Expansion capped at ${MAX_EXPAND_NODES} nodes. Manually expand specific folders for deeper inspection.`,
-      5000
-    );
-  }
-}
 
 function collapseAll() {
   for (const [, node] of domNodes) {
@@ -515,7 +454,6 @@ async function doScan() {
 scanBtn.addEventListener("click", doScan);
 pathInput.addEventListener("keydown", e => { if (e.key === "Enter") doScan(); });
 collapseAllBtn.addEventListener("click", collapseAll);
-expandAllBtn.addEventListener("click", expandAll);
 pathInput.focus();
 
 // ═══════════════════════════════════════════════════════════════════
