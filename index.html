@@ -25,23 +25,30 @@
         <div class="logo">
           <span class="logo-mark">&#9670;</span>
           <span class="logo-text">DIRSIZ</span>
-          <span class="logo-version">v1.0</span>
+          <span class="logo-version-outer"><span class="logo-version">v1.0</span></span>
         </div>
 
-        <div class="path-input-wrapper">
-          <span class="path-prompt">&#9654;</span>
-          <input
-            id="pathInput"
-            type="text"
-            class="path-input"
-            data-i18n-placeholder="placeholder"
-            placeholder="target directory ..."
-            spellcheck="false"
-          />
-          <button id="scanBtn" class="btn-scan">
-            <span class="btn-label" data-i18n="scan">INIT SCAN</span>
-            <span class="btn-shimmer"></span>
-          </button>
+        <div class="path-bar">
+          <div class="path-input-outer">
+            <div class="path-input-wrapper">
+              <span class="path-prompt">&#9654;</span>
+              <input
+                id="pathInput"
+                type="text"
+                class="path-input"
+                data-i18n-placeholder="placeholder"
+                placeholder="target directory ..."
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+          </div>
+          <div class="btn-scan-outer">
+            <button id="scanBtn" class="btn-scan">
+              <span class="btn-label" data-i18n="scan">INIT SCAN</span>
+              <span class="btn-shimmer"></span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -69,7 +76,8 @@
       </div>
 
       <!-- Tree container -->
-      <div id="treeContainer" class="tree-container">
+      <div class="tree-outer">
+        <div id="treeContainer" class="tree-container">
         <div id="loadingIndicator" class="loading hidden">
           <div class="loading-spinner">
             <div class="spinner-ring"></div>
@@ -83,6 +91,7 @@
           <div class="empty-hint" data-i18n="emptyHint">press <kbd>ENTER</kbd> or click INIT SCAN</div>
         </div>
         <div id="treeContent" class="tree-content"></div>
+        </div>
       </div>
 
       <!-- Footer -->

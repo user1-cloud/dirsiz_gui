@@ -12,6 +12,7 @@
   "emptyHint": "press <kbd>ENTER</kbd> or click INIT SCAN",
   "footerReady": "READY",
   "footerScanning": "SCANNING",
+  "footerBuilding": "BUILDING TREE",
   "footerAnalyzed": "ANALYZED",
   "footerError": "ERROR",
   "loading": "loading ...",

@@ -1,10 +1,13 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 use serde::Serialize;
 use tauri::Emitter;
 use walkdir::WalkDir;
+
+static CANCEL_GEN: AtomicU64 = AtomicU64::new(0);
 
 const UNITS: &[&str] = &["B", "K", "M", "G", "T", "P", "E"];
 
@@ -79,6 +82,7 @@ fn walk_serial(
     show_hidden: bool,
     app: &tauri::AppHandle,
     start: Instant,
+    gen: u64,
 ) -> Result<Vec<Entry>, String> {
     let walker = WalkDir::new(root).into_iter().filter_entry(|e| {
         e.depth() == 0 || show_hidden || !is_hidden(e.file_name())
@@ -87,7 +91,7 @@ fn walk_serial(
     let mut entries: Vec<Entry> = Vec::with_capacity(200_000);
     let mut files: u64 = 0;
     let mut bytes: u64 = 0;
-    let tick = Duration::from_millis(100);
+    let tick = Duration::from_millis(200);
     let mut next_tick = start + tick;
 
     for entry in walker.filter_map(|e| e.ok()) {
@@ -110,6 +114,9 @@ fn walk_serial(
 
         let now = Instant::now();
         if now >= next_tick {
+            if CANCEL_GEN.load(Ordering::Relaxed) != gen {
+                return Err("CANCELLED".into());
+            }
             let _ = app.emit(
                 "scan-progress",
                 ProgressPayload {
@@ -212,13 +219,18 @@ fn build_one_level(
 // ── Commands ───────────────────────────────────────────────────────────
 
 #[tauri::command]
-pub fn scan_directory(
+pub fn cancel_scan() {
+    CANCEL_GEN.fetch_add(1, Ordering::SeqCst);
+}
+
+#[tauri::command]
+pub async fn scan_directory(
     app: tauri::AppHandle,
     path: String,
     show_hidden: bool,
 ) -> Result<ScanResult, String> {
     let start = Instant::now();
-    let root = Path::new(&path);
+    let root = Path::new(&path).to_path_buf();
 
     let root = match root.canonicalize() {
         Ok(p) => strip_extended_prefix(p),
@@ -229,55 +241,67 @@ pub fn scan_directory(
         return Err(format!("'{}' is not a directory", root.display()));
     }
 
-    let entries = walk_serial(&root, show_hidden, &app, start)?;
+    let gen = CANCEL_GEN.load(Ordering::SeqCst);
 
-    if entries.is_empty() {
-        return Ok(ScanResult {
-            root_name: root
+    let app2 = app.clone();
+    let root2 = root.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        let entries = walk_serial(&root2, show_hidden, &app2, start, gen)?;
+
+        if entries.is_empty() {
+            return Ok(ScanResult {
+                root_name: root2
+                    .file_name()
+                    .unwrap_or(root2.as_os_str())
+                    .to_string_lossy()
+                    .into_owned(),
+                root_path: root2.to_string_lossy().into_owned(),
+                total_size: 0,
+                total_size_human: "0 B".into(),
+                file_count: 0,
+                dir_count: 0,
+                children: vec![],
+                elapsed_ms: start.elapsed().as_millis() as u64,
+            });
+        }
+
+        let file_count = entries.iter().filter(|e| !e.is_dir).count() as u64;
+        let dir_count = entries.iter().filter(|e| e.is_dir).count() as u64;
+
+        let _ = app2.emit("scan-phase", "building");
+        let (sizes, tree) = propagate_and_build(entries, &root2);
+        let total_size = sizes.get(&root2).copied().unwrap_or(0);
+        let children = build_one_level(&tree, &root2);
+
+        Ok(ScanResult {
+            root_name: root2
                 .file_name()
-                .unwrap_or(root.as_os_str())
+                .unwrap_or(root2.as_os_str())
                 .to_string_lossy()
                 .into_owned(),
-            root_path: root.to_string_lossy().into_owned(),
-            total_size: 0,
-            total_size_human: "0 B".into(),
-            file_count: 0,
-            dir_count: 0,
-            children: vec![],
+            root_path: root2.to_string_lossy().into_owned(),
+            total_size,
+            total_size_human: human_size(total_size),
+            file_count,
+            dir_count,
+            children,
             elapsed_ms: start.elapsed().as_millis() as u64,
-        });
-    }
-
-    let file_count = entries.iter().filter(|e| !e.is_dir).count() as u64;
-    let dir_count = entries.iter().filter(|e| e.is_dir).count() as u64;
-
-    let (sizes, tree) = propagate_and_build(entries, &root);
-    let total_size = sizes.get(&root).copied().unwrap_or(0);
-    let children = build_one_level(&tree, &root);
-
-    Ok(ScanResult {
-        root_name: root
-            .file_name()
-            .unwrap_or(root.as_os_str())
-            .to_string_lossy()
-            .into_owned(),
-        root_path: root.to_string_lossy().into_owned(),
-        total_size,
-        total_size_human: human_size(total_size),
-        file_count,
-        dir_count,
-        children,
-        elapsed_ms: start.elapsed().as_millis() as u64,
+        })
     })
+    .await
+    .map_err(|e| format!("Task join error: {}", e))?;
+
+    result
 }
 
 #[tauri::command]
-pub fn expand_directory(
+pub async fn expand_directory(
     app: tauri::AppHandle,
     path: String,
     show_hidden: bool,
 ) -> Result<Vec<DirEntry>, String> {
-    let dir = Path::new(&path);
+    let dir = Path::new(&path).to_path_buf();
+
     let dir = match dir.canonicalize() {
         Ok(p) => strip_extended_prefix(p),
         Err(e) => return Err(format!("Cannot access '{}': {}", path, e)),
@@ -287,13 +311,24 @@ pub fn expand_directory(
         return Err(format!("'{}' is not a directory", dir.display()));
     }
 
-    let start = Instant::now();
-    let entries = walk_serial(&dir, show_hidden, &app, start)?;
+    let gen = CANCEL_GEN.load(Ordering::SeqCst);
 
-    if entries.is_empty() {
-        return Ok(vec![]);
-    }
+    let app2 = app.clone();
+    let dir2 = dir.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        let start = Instant::now();
+        let entries = walk_serial(&dir2, show_hidden, &app2, start, gen)?;
 
-    let (_sizes, tree) = propagate_and_build(entries, &dir);
-    Ok(build_one_level(&tree, &dir))
+        if entries.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let _ = app2.emit("scan-phase", "building");
+        let (_sizes, tree) = propagate_and_build(entries, &dir2);
+        Ok(build_one_level(&tree, &dir2))
+    })
+    .await
+    .map_err(|e| format!("Task join error: {}", e))?;
+
+    result
 }

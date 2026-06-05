@@ -12,6 +12,7 @@
   "emptyHint": "按 <kbd>回车</kbd> 或点击 开始扫描",
   "footerReady": "就绪",
   "footerScanning": "扫描中",
+  "footerBuilding": "构建树中",
   "footerAnalyzed": "分析完成",
   "footerError": "错误",
   "loading": "加载中 ...",

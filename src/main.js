@@ -102,6 +102,7 @@ const loadingInd     = document.getElementById("loadingIndicator");
 const emptyState     = document.getElementById("emptyState");
 const treeContent    = document.getElementById("treeContent");
 const footerText     = document.getElementById("footerText");
+const footerBlink    = document.querySelector(".footer-blink");
 const footerProgress = document.getElementById("footerProgress");
 const langToggle     = document.getElementById("langToggle");
 const fontToggle     = document.getElementById("fontToggle");
@@ -113,15 +114,57 @@ const fontToggle     = document.getElementById("fontToggle");
 let unlistenProgress = null;
 
 async function setupProgressListener() {
+  let pending = null;
+  let rafId = null;
   unlistenProgress = await listen("scan-progress", (event) => {
-    const p = event.payload;
-    footerProgress.textContent = `${p.files.toLocaleString()} files  |  ${p.bytesHuman}`;
+    pending = event.payload;
+    if (!rafId) {
+      rafId = requestAnimationFrame(() => {
+        if (pending) {
+          const p = pending;
+          footerProgress.textContent = `${p.files.toLocaleString()} files  |  ${p.bytesHuman}`;
+          pending = null;
+        }
+        rafId = null;
+      });
+    }
   });
 }
 
 function clearProgress() { footerProgress.textContent = ""; }
 
+// ── Phase events ──────────────────────────────────────────────────
+
+let appState = "idle"; // idle | scanning | building | done | error
+
+async function setupPhaseListener() {
+  await listen("scan-phase", (event) => {
+    if (event.payload === "building") {
+      setAppState("building");
+    }
+  });
+}
+
+function setAppState(state) {
+  appState = state;
+  // Update footer text
+  const labels = {
+    idle:     "footerReady",
+    scanning: "footerScanning",
+    building: "footerBuilding",
+    done:     "footerAnalyzed",
+    error:    "footerError",
+  };
+  footerText.textContent = t(labels[state] || "footerReady");
+  // Update blink indicator
+  footerBlink.className = `footer-blink blink-${state}`;
+  if (state === "done" || state === "error") {
+    clearProgress();
+  }
+}
+
 setupProgressListener();
+setupPhaseListener();
 
 // ═══════════════════════════════════════════════════════════════════
 // STATE
@@ -141,26 +184,27 @@ function showLoading() {
   emptyState.style.display = "none";
   treeContent.innerHTML = "";
   statsBar.classList.add("hidden");
-  footerText.textContent = t("footerScanning");
   clearProgress();
+  setAppState("scanning");
 }
 
 function hideLoading() {
   loadingInd.classList.add("hidden");
-  footerText.textContent = t("footerReady");
-  clearProgress();
 }
 
 function showToast(msg, dur = 4000) {
-  const old = document.querySelector(".toast");
+  const old = document.querySelector(".toast-outer");
   if (old) old.remove();
+  const outer = document.createElement("div");
+  outer.className = "toast-outer";
   const t = document.createElement("div");
   t.className = "toast";
   t.textContent = msg;
-  document.body.appendChild(t);
+  outer.appendChild(t);
+  document.body.appendChild(outer);
   setTimeout(() => {
-    t.classList.add("out");
-    t.addEventListener("animationend", () => t.remove());
+    outer.classList.add("out");
+    outer.addEventListener("animationend", () => outer.remove());
   }, dur);
 }
 
@@ -240,99 +284,120 @@ function renderNodeRow(entry, depth, isDir, hasKids, parentSize) {
 }
 
 function renderTree(container, children, depth = 0, parentSize = null, stagger = 0) {
-  const frag = document.createDocumentFragment();
+  const CHUNK = 40;
   const useStagger = children.length <= 200;
+  let idx = 0;
 
-  for (let i = 0; i < children.length; i++) {
-    const entry = children[i];
-    const isDir = entry.isDir;
-    // childCount comes from backend; > 0 means it has children to lazy-load
-    const hasKids = entry.childCount > 0;
+  function processChunk() {
+    const frag = document.createDocumentFragment();
+    const end = Math.min(idx + CHUNK, children.length);
 
-    const wrap = document.createElement("div");
-    wrap.className = "tree-node";
-    if (useStagger) wrap.style.animationDelay = `${stagger + i * 0.01}s`;
-    wrap.dataset.path = entry.path;
+    for (let i = idx; i < end; i++) {
+      const entry = children[i];
+      const isDir = entry.isDir;
+      const hasKids = entry.childCount > 0;
 
-    const { row, toggle, bar } = renderNodeRow(entry, depth, isDir, hasKids, parentSize);
+      const wrap = document.createElement("div");
+      wrap.className = "tree-node";
+      if (useStagger) wrap.style.animationDelay = `${stagger + i * 0.01}s`;
+      wrap.dataset.path = entry.path;
 
-    if (parentSize && parentSize > 0) {
-      bar.style.width = `${Math.max((entry.size / parentSize) * 100, 0.2)}%`;
-    }
+      const { row, toggle, bar } = renderNodeRow(entry, depth, isDir, hasKids, parentSize);
 
-    let kidContainer = null;
+      if (parentSize && parentSize > 0) {
+        bar.style.width = `${Math.max((entry.size / parentSize) * 100, 0.2)}%`;
+      }
 
-    if (isDir && hasKids) {
-      kidContainer = document.createElement("div");
-      kidContainer.className = "node-children";
+      let kidContainer = null;
 
-      row.addEventListener("click", async (e) => {
-        e.stopPropagation();
+      if (isDir && hasKids) {
+        kidContainer = document.createElement("div");
+        kidContainer.className = "node-children";
 
-        if (kidContainer.classList.contains("expanded")) {
-          kidContainer.classList.remove("expanded");
-          toggle.classList.remove("expanded");
-          return;
-        }
+        row.addEventListener("click", async (e) => {
+          e.stopPropagation();
 
-        // Lazy load children from backend
-        if (kidContainer.children.length === 0 && !loadingPaths.has(entry.path)) {
-          toggle.classList.add("expanded");
-          kidContainer.classList.add("expanded");
-
-          // Show mini loader
-          const miniLoad = document.createElement("div");
-          miniLoad.className = "node-loading";
-          miniLoad.textContent = t("loading");
-          miniLoad.style.paddingLeft = `${(depth + 1) * 18 + 6}px`;
-          kidContainer.appendChild(miniLoad);
-
-          loadingPaths.add(entry.path);
-          try {
-            const kids = await invoke("expand_directory", {
-              path: entry.path,
-              showHidden: showHidden.checked,
-            });
-            // Clear mini loader
-            kidContainer.innerHTML = "";
-            if (kids.length > 0) {
-              renderTree(kidContainer, kids, depth + 1, entry.size);
+          if (kidContainer.classList.contains("expanded")) {
+            // Collapse: cancel loading if in progress
+            if (loadingPaths.has(entry.path)) {
+              invoke("cancel_scan");
             }
-          } catch (err) {
-            kidContainer.innerHTML = "";
-            showToast(String(err));
             kidContainer.classList.remove("expanded");
             toggle.classList.remove("expanded");
-          } finally {
-            loadingPaths.delete(entry.path);
+            return;
           }
-        } else if (!kidContainer.classList.contains("expanded")) {
-          kidContainer.classList.add("expanded");
-          toggle.classList.add("expanded");
-        }
+
+          if (kidContainer.children.length === 0 && !loadingPaths.has(entry.path)) {
+            toggle.classList.add("expanded");
+            kidContainer.classList.add("expanded");
+
+            const miniLoad = document.createElement("div");
+            miniLoad.className = "node-loading";
+            miniLoad.textContent = t("loading");
+            miniLoad.style.paddingLeft = `${(depth + 1) * 18 + 6}px`;
+            kidContainer.appendChild(miniLoad);
+
+            loadingPaths.add(entry.path);
+            setAppState("scanning");
+            try {
+              await invoke("cancel_scan");
+              const kids = await invoke("expand_directory", {
+                path: entry.path,
+                showHidden: showHidden.checked,
+              });
+              kidContainer.innerHTML = "";
+              if (kids.length > 0) {
+                renderTree(kidContainer, kids, depth + 1, entry.size);
+              }
+              setAppState("done");
+            } catch (err) {
+              kidContainer.innerHTML = "";
+              if (String(err) !== "CANCELLED") {
+                showToast(String(err));
+              }
+              kidContainer.classList.remove("expanded");
+              toggle.classList.remove("expanded");
+              setAppState("done");
+            } finally {
+              loadingPaths.delete(entry.path);
+            }
+          } else if (!kidContainer.classList.contains("expanded")) {
+            kidContainer.classList.add("expanded");
+            toggle.classList.add("expanded");
+          }
+        });
+
+        wrap.appendChild(row);
+        wrap.appendChild(kidContainer);
+      } else {
+        wrap.appendChild(row);
+      }
+
+      domNodes.set(entry.path, {
+        wrapper: wrap,
+        childrenContainer: kidContainer,
+        hasChildren: isDir && hasKids,
+        depth,
       });
 
-      wrap.appendChild(row);
-      wrap.appendChild(kidContainer);
-    } else {
-      wrap.appendChild(row);
+      row.addEventListener("mouseenter", () => showTooltip(entry.path, row));
+      row.addEventListener("mouseleave", hideTooltip);
+
+      frag.appendChild(wrap);
+      totalRenderedNodes++;
     }
 
-    domNodes.set(entry.path, {
-      wrapper: wrap,
-      childrenContainer: kidContainer,
-      hasChildren: isDir && hasKids,
-      depth,
-    });
+    container.appendChild(frag);
+    idx = end;
 
-    row.addEventListener("mouseenter", () => showTooltip(entry.path, row));
-    row.addEventListener("mouseleave", hideTooltip);
-
-    frag.appendChild(wrap);
-    totalRenderedNodes++;
+    if (idx < children.length) {
+      requestAnimationFrame(processChunk);
+    }
   }
 
-  container.appendChild(frag);
+  if (children.length > 0) {
+    processChunk();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -382,6 +447,7 @@ async function doScan() {
   showLoading();
 
   try {
+    await invoke("cancel_scan");
     const result = await invoke("scan_directory", { path: p, showHidden: showHidden.checked });
 
     currentData = result;
@@ -394,7 +460,6 @@ async function doScan() {
     statDirs.textContent  = result.dirCount.toLocaleString();
     statTime.textContent  = `${(result.elapsedMs / 1000).toFixed(2)}s`;
     statsBar.classList.remove("hidden");
-    footerText.textContent = t("footerAnalyzed");
 
     emptyState.style.display = "none";
     treeContent.innerHTML = "";
@@ -435,14 +500,16 @@ async function doScan() {
     }
 
     hideLoading();
+    setAppState("done");
   } catch (err) {
     hideLoading();
+    if (String(err) === "CANCELLED") return;
     emptyState.style.display = "flex";
     treeContent.innerHTML = "";
     domNodes.clear();
     totalRenderedNodes = 0;
     loadingPaths.clear();
-    footerText.textContent = t("footerError");
+    setAppState("error");
     showToast(String(err));
   }
 
@@ -458,12 +525,8 @@ pathInput.addEventListener("keydown", e => { if (e.key === "Enter") doScan(); })
 collapseAllBtn.addEventListener("click", collapseAll);
 langToggle.addEventListener("click", () => {
   toggleLang();
-  if (currentData) {
-    // refresh dynamic footer text after language switch
-    footerText.textContent = t("footerAnalyzed");
-  } else {
-    footerText.textContent = t("footerReady");
-  }
+  // refresh footer text with current state after language switch
+  setAppState(currentData ? "done" : "idle");
   langToggle.textContent = getLang() === "zh" ? "EN / 中" : "中 / EN";
 });
 pathInput.focus();
@@ -496,3 +559,6 @@ fontToggle.addEventListener("click", () => {
 });
 
 initOutrunGrid();
+
+// Initial blink state
+footerBlink.className = "footer-blink blink-idle";
