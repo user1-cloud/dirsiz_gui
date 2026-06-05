@@ -1,175 +1,233 @@
 import { invoke } from "@tauri-apps/api/core";
 
-// ── Starfield ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// OUTRUN PERSPECTIVE GRID
+// ═══════════════════════════════════════════════════════════════════
 
-function initStarfield() {
-  const canvas = document.getElementById("starfield");
+function initOutrunGrid() {
+  const canvas = document.getElementById("outrunGrid");
   const ctx = canvas.getContext("2d");
-
-  let stars = [];
-  const STAR_COUNT = 160;
 
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
 
-  function createStars() {
-    stars = [];
-    for (let i = 0; i < STAR_COUNT; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.2 + 0.3,
-        speed: Math.random() * 0.3 + 0.05,
-        opacity: Math.random() * 0.6 + 0.2,
-        phase: Math.random() * Math.PI * 2,
-      });
-    }
-  }
-
   let frame = 0;
   function draw() {
     frame++;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
 
-    for (const star of stars) {
-      const twinkle = Math.sin(frame * 0.02 + star.phase) * 0.3 + 0.7;
-      const alpha = star.opacity * twinkle;
+    const horizonY = h * 0.58;
+    const vanishX = w / 2;
 
+    // Horizon line glow
+    const hGrad = ctx.createLinearGradient(0, horizonY, 0, horizonY + 120);
+    hGrad.addColorStop(0, 'rgba(0,229,255,0.08)');
+    hGrad.addColorStop(0.5, 'rgba(255,45,120,0.05)');
+    hGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = hGrad;
+    ctx.fillRect(0, horizonY, w, 120);
+
+    // Horizon line
+    ctx.strokeStyle = 'rgba(0,229,255,0.18)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY);
+    ctx.lineTo(w, horizonY);
+    ctx.stroke();
+
+    // Vertical grid lines (perspective)
+    const numLines = 30;
+    for (let i = -numLines; i <= numLines; i++) {
+      const groundX = vanishX + i * 60;
+      if (groundX < -200 || groundX > w + 200) continue;
+
+      const topX = vanishX + (groundX - vanishX) * 0.18;
+      const topY = horizonY;
+      const bottomY = h + 40;
+
+      const alpha = 0.04 + 0.02 * (1 - Math.abs(i) / numLines);
+      ctx.strokeStyle = `rgba(0,229,255,${alpha})`;
+      ctx.lineWidth = 0.5;
       ctx.beginPath();
-      ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(180,200,255,${alpha})`;
-      ctx.fill();
-
-      if (twinkle > 0.85 && star.r > 0.8) {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r * 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,229,255,${alpha * 0.25})`;
-        ctx.fill();
-      }
+      ctx.moveTo(topX, topY + 2);
+      ctx.lineTo(groundX, bottomY);
+      ctx.stroke();
     }
+
+    // Horizontal grid lines (perspective)
+    const numHoriz = 18;
+    for (let j = 0; j < numHoriz; j++) {
+      const t = (j + 1) / numHoriz;
+      const y = horizonY + Math.pow(t, 1.8) * (h - horizonY + 60);
+      const alpha = 0.03 + 0.015 * (1 - t);
+      ctx.strokeStyle = `rgba(255,45,120,${alpha})`;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      const spread = Math.pow(t, 1.4) * w * 0.9;
+      ctx.moveTo(vanishX - spread, y);
+      ctx.lineTo(vanishX + spread, y);
+      ctx.stroke();
+    }
+
+    // Pulsing grid glow near horizon
+    const pulse = Math.sin(frame * 0.015) * 0.5 + 0.5;
+    const glowAlpha = 0.04 + pulse * 0.04;
+    const glow = ctx.createRadialGradient(vanishX, horizonY, 0, vanishX, horizonY, w * 0.6);
+    glow.addColorStop(0, `rgba(0,229,255,${glowAlpha})`);
+    glow.addColorStop(0.5, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
 
     requestAnimationFrame(draw);
   }
 
   resize();
-  createStars();
   draw();
-
-  window.addEventListener("resize", () => {
-    resize();
-    createStars();
-  });
+  window.addEventListener("resize", resize);
 }
 
-// ── DOM refs ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// DOM REFS
+// ═══════════════════════════════════════════════════════════════════
 
-const pathInput = document.getElementById("pathInput");
-const scanBtn = document.getElementById("scanBtn");
-const showHidden = document.getElementById("showHidden");
+const pathInput   = document.getElementById("pathInput");
+const scanBtn     = document.getElementById("scanBtn");
+const showHidden  = document.getElementById("showHidden");
 const collapseAllBtn = document.getElementById("collapseAll");
-const expandAllBtn = document.getElementById("expandAll");
-const statsBar = document.getElementById("statsBar");
-const statSize = document.getElementById("statSize");
-const statFiles = document.getElementById("statFiles");
-const statDirs = document.getElementById("statDirs");
-const statTime = document.getElementById("statTime");
-const treeContainer = document.getElementById("treeContainer");
-const loadingIndicator = document.getElementById("loadingIndicator");
-const emptyState = document.getElementById("emptyState");
+const expandAllBtn   = document.getElementById("expandAll");
+const statsBar    = document.getElementById("statsBar");
+const statSize    = document.getElementById("statSize");
+const statFiles   = document.getElementById("statFiles");
+const statDirs    = document.getElementById("statDirs");
+const statTime    = document.getElementById("statTime");
+const treeCont    = document.getElementById("treeContainer");
+const loadingInd  = document.getElementById("loadingIndicator");
+const emptyState  = document.getElementById("emptyState");
 const treeContent = document.getElementById("treeContent");
+const footerText  = document.querySelector(".footer-text");
 
-// ── State ────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
 
-let currentData = null;
-let entryMap = new Map();        // path -> DirEntry
-let domNodes = new Map();        // path -> { wrapper, childrenContainer, hasChildren, depth }
+let currentData        = null;
+let entryMap           = new Map();
+let domNodes           = new Map();
 let totalRenderedNodes = 0;
-const MAX_EXPAND_NODES = 3000;  // hard cap for expandAll
+const MAX_EXPAND_NODES = 3000;
 
-// ── Helpers ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
 
 function showLoading() {
-  loadingIndicator.classList.remove("hidden");
+  loadingInd.classList.remove("hidden");
   emptyState.style.display = "none";
   treeContent.innerHTML = "";
   statsBar.classList.add("hidden");
+  footerText.textContent = "SCANNING";
 }
 
 function hideLoading() {
-  loadingIndicator.classList.add("hidden");
+  loadingInd.classList.add("hidden");
+  footerText.textContent = "READY";
 }
 
-function showToast(msg, duration = 4000) {
-  const existing = document.querySelector(".toast");
-  if (existing) existing.remove();
-
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-
+function showToast(msg, dur = 4000) {
+  const old = document.querySelector(".toast");
+  if (old) old.remove();
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
   setTimeout(() => {
-    toast.classList.add("out");
-    toast.addEventListener("animationend", () => toast.remove());
-  }, duration);
+    t.classList.add("out");
+    t.addEventListener("animationend", () => t.remove());
+  }, dur);
 }
 
-// ── Entry map builder ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// SIZE COLOR — Synthwave gradient
+// ═══════════════════════════════════════════════════════════════════
+
+function sizeColor(ratio) {
+  if (ratio < 0.03) return { color: '#3a4470', glow: 'none' };
+  if (ratio < 0.08) return { color: '#00ccbb', glow: '0 0 4px #00ccbb33' };
+  if (ratio < 0.20) return { color: '#00e5ff', glow: '0 0 5px #00e5ff44' };
+  if (ratio < 0.40) return { color: '#ffb627', glow: '0 0 6px #ffb62744' };
+  if (ratio < 0.65) return { color: '#ff6b3d', glow: '0 0 8px #ff6b3d55' };
+  return { color: '#ff2d78', glow: '0 0 10px #ff2d7866' };
+}
+
+function applySizeColor(el, entrySize, parentSize) {
+  if (!parentSize || parentSize === 0) return;
+  const r = entrySize / parentSize;
+  const { color, glow } = sizeColor(r);
+  el.style.color = color;
+  el.style.textShadow = glow;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ENTRY MAP
+// ═══════════════════════════════════════════════════════════════════
 
 function buildEntryMap(children) {
-  for (const entry of children) {
-    entryMap.set(entry.path, entry);
-    if (entry.children.length > 0) {
-      buildEntryMap(entry.children);
-    }
+  for (const e of children) {
+    entryMap.set(e.path, e);
+    if (e.children.length > 0) buildEntryMap(e.children);
   }
 }
 
-// ── Tree Rendering ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// TREE RENDERING
+// ═══════════════════════════════════════════════════════════════════
 
-function createToggleIcon(hasChildren, expanded) {
-  const span = document.createElement("span");
-  span.className = "node-toggle";
-  if (hasChildren) {
-    span.classList.add("has-children");
-    span.textContent = "▶";
-    if (expanded) span.classList.add("expanded");
+function makeToggle(hasKids, open) {
+  const s = document.createElement("span");
+  s.className = "node-toggle";
+  if (hasKids) {
+    s.classList.add("has-children");
+    s.textContent = "▶";
+    if (open) s.classList.add("expanded");
   }
-  return span;
+  return s;
 }
 
-function createIcon(isDir) {
-  const span = document.createElement("span");
-  span.className = "node-icon";
-  span.classList.add(isDir ? "dir" : "file");
-  span.textContent = isDir ? "◆" : "◇";
-  return span;
+function makeIcon(isDir) {
+  const s = document.createElement("span");
+  s.className = "node-icon " + (isDir ? "dir" : "file");
+  s.textContent = isDir ? "◈" : "○";
+  return s;
 }
 
-function renderNodeRow(entry, depth, isDir, hasChildren) {
+function renderNodeRow(entry, depth, isDir, hasKids, parentSize) {
   const row = document.createElement("div");
   row.className = "node-row";
   if (isDir) row.classList.add("dir-row");
-  row.style.paddingLeft = `${depth * 18 + 4}px`;
+  row.style.paddingLeft = `${depth * 18 + 6}px`;
 
-  const toggle = createToggleIcon(hasChildren && isDir, false);
+  const toggle = makeToggle(hasKids && isDir, false);
   row.appendChild(toggle);
 
-  const icon = createIcon(isDir);
+  const icon = makeIcon(isDir);
   row.appendChild(icon);
 
   const name = document.createElement("span");
   name.className = "node-name";
   name.textContent = entry.name + (isDir ? "/" : "");
   name.title = entry.path;
+  applySizeColor(name, entry.size, parentSize);
   row.appendChild(name);
 
-  const size = document.createElement("span");
-  size.className = "node-size";
-  size.textContent = entry.sizeHuman;
-  row.appendChild(size);
+  const sz = document.createElement("span");
+  sz.className = "node-size";
+  sz.textContent = entry.sizeHuman;
+  applySizeColor(sz, entry.size, parentSize);
+  row.appendChild(sz);
 
   const bar = document.createElement("div");
   bar.className = "node-size-bar-bg";
@@ -179,93 +237,83 @@ function renderNodeRow(entry, depth, isDir, hasChildren) {
 }
 
 function renderTree(container, children, depth = 0, parentSize = null, stagger = 0) {
-  const fragment = document.createDocumentFragment();
+  const frag = document.createDocumentFragment();
   const useStagger = children.length <= 200;
 
   for (let i = 0; i < children.length; i++) {
     const entry = children[i];
     const isDir = entry.isDir;
-    const hasChildren = entry.children && entry.children.length > 0;
+    const hasKids = entry.children && entry.children.length > 0;
 
-    const nodeWrapper = document.createElement("div");
-    nodeWrapper.className = "tree-node";
-    if (useStagger) {
-      nodeWrapper.style.animationDelay = `${stagger + i * 0.012}s`;
-    }
-    nodeWrapper.dataset.path = entry.path;
+    const wrap = document.createElement("div");
+    wrap.className = "tree-node";
+    if (useStagger) wrap.style.animationDelay = `${stagger + i * 0.01}s`;
+    wrap.dataset.path = entry.path;
 
-    const { row, toggle, bar } = renderNodeRow(entry, depth, isDir, hasChildren);
+    const { row, toggle, bar } = renderNodeRow(entry, depth, isDir, hasKids, parentSize);
 
     if (parentSize && parentSize > 0) {
-      const ratio = entry.size / parentSize;
-      bar.style.width = `${Math.max(ratio * 100, 0.2)}%`;
+      bar.style.width = `${Math.max((entry.size / parentSize) * 100, 0.2)}%`;
     }
 
-    let childrenContainer = null;
+    let kidContainer = null;
 
-    if (isDir && hasChildren) {
-      childrenContainer = document.createElement("div");
-      childrenContainer.className = "node-children";
+    if (isDir && hasKids) {
+      kidContainer = document.createElement("div");
+      kidContainer.className = "node-children";
 
       row.addEventListener("click", (e) => {
         e.stopPropagation();
-        const isExpanded = childrenContainer.classList.contains("expanded");
-
-        if (isExpanded) {
-          childrenContainer.classList.remove("expanded");
+        if (kidContainer.classList.contains("expanded")) {
+          kidContainer.classList.remove("expanded");
           toggle.classList.remove("expanded");
         } else {
-          if (childrenContainer.children.length === 0) {
+          if (kidContainer.children.length === 0) {
             const data = entryMap.get(entry.path);
-            if (data) {
-              renderTree(childrenContainer, data.children, depth + 1, entry.size);
-            }
+            if (data) renderTree(kidContainer, data.children, depth + 1, entry.size);
           }
-          childrenContainer.classList.add("expanded");
+          kidContainer.classList.add("expanded");
           toggle.classList.add("expanded");
         }
       });
 
-      nodeWrapper.appendChild(row);
-      nodeWrapper.appendChild(childrenContainer);
+      wrap.appendChild(row);
+      wrap.appendChild(kidContainer);
     } else {
-      nodeWrapper.appendChild(row);
+      wrap.appendChild(row);
     }
 
     domNodes.set(entry.path, {
-      wrapper: nodeWrapper,
-      childrenContainer,
-      hasChildren: isDir && hasChildren,
+      wrapper: wrap,
+      childrenContainer: kidContainer,
+      hasChildren: isDir && hasKids,
       depth,
     });
 
     row.addEventListener("mouseenter", () => showTooltip(entry.path, row));
     row.addEventListener("mouseleave", hideTooltip);
 
-    fragment.appendChild(nodeWrapper);
+    frag.appendChild(wrap);
     totalRenderedNodes++;
   }
 
-  container.appendChild(fragment);
+  container.appendChild(frag);
 }
 
-// ── Inline tooltip ───────────────────────────────────────────────────
-// Inserted as a sibling after the hovered node-wrapper, so it pushes
-// rows below down instead of floating over them.
+// ═══════════════════════════════════════════════════════════════════
+// INLINE TOOLTIP
+// ═══════════════════════════════════════════════════════════════════
 
 let activeTooltip = null;
 
 function showTooltip(text, row) {
   hideTooltip();
-
   const wrapper = row.closest(".tree-node") || row.parentElement;
-
   const tip = document.createElement("div");
   tip.className = "node-tooltip-inline";
   tip.textContent = text;
-
   wrapper.insertAdjacentElement("afterend", tip);
-  activeTooltip = { tip, wrapper, row };
+  activeTooltip = { tip };
 }
 
 function hideTooltip() {
@@ -275,62 +323,53 @@ function hideTooltip() {
   }
 }
 
-// ── Expand / Collapse All ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// EXPAND / COLLAPSE ALL
+// ═══════════════════════════════════════════════════════════════════
 
 async function expandAll() {
   if (!currentData) return;
-
-  const startTotal = totalRenderedNodes;
-  let batchChanged = true;
+  const start = totalRenderedNodes;
+  let changed = true;
   let safety = 0;
 
-  // Expand level by level, using rAF to keep UI alive between levels
-  while (batchChanged && safety < 60) {
-    batchChanged = false;
+  while (changed && safety < 60) {
+    changed = false;
     safety++;
-
     const pending = [];
 
     for (const [path, node] of domNodes) {
-      if (totalRenderedNodes - startTotal >= MAX_EXPAND_NODES) break;
+      if (totalRenderedNodes - start >= MAX_EXPAND_NODES) break;
       if (!node.hasChildren || !node.childrenContainer) continue;
       if (node.childrenContainer.classList.contains("expanded")) continue;
-
       const entry = entryMap.get(path);
       if (!entry) continue;
-
       pending.push({ node, entry });
     }
 
     if (pending.length === 0) break;
 
-    // Render in small chunks with rAF to avoid blocking
     const CHUNK = 30;
     for (let i = 0; i < pending.length; i += CHUNK) {
-      if (totalRenderedNodes - startTotal >= MAX_EXPAND_NODES) break;
-
+      if (totalRenderedNodes - start >= MAX_EXPAND_NODES) break;
       const chunk = pending.slice(i, i + CHUNK);
-
       for (const { node, entry } of chunk) {
-        if (totalRenderedNodes - startTotal >= MAX_EXPAND_NODES) break;
-
+        if (totalRenderedNodes - start >= MAX_EXPAND_NODES) break;
         if (node.childrenContainer.children.length === 0) {
           renderTree(node.childrenContainer, entry.children, node.depth + 1, entry.size);
         }
         node.childrenContainer.classList.add("expanded");
-        const toggle = node.wrapper.querySelector(".node-toggle");
-        if (toggle) toggle.classList.add("expanded");
-        batchChanged = true;
+        const tgl = node.wrapper.querySelector(".node-toggle");
+        if (tgl) tgl.classList.add("expanded");
+        changed = true;
       }
-
-      // Yield to the browser to keep UI responsive
-      await new Promise((r) => requestAnimationFrame(r));
+      await new Promise(r => requestAnimationFrame(r));
     }
   }
 
-  if (totalRenderedNodes - startTotal >= MAX_EXPAND_NODES) {
+  if (totalRenderedNodes - start >= MAX_EXPAND_NODES) {
     showToast(
-      `Expansion capped at ${MAX_EXPAND_NODES} nodes to keep UI responsive. Collapse and expand specific folders manually.`,
+      `Expansion capped at ${MAX_EXPAND_NODES} nodes. Manually expand specific folders for deeper inspection.`,
       5000
     );
   }
@@ -340,28 +379,24 @@ function collapseAll() {
   for (const [, node] of domNodes) {
     if (node.childrenContainer) {
       node.childrenContainer.classList.remove("expanded");
-      const toggle = node.wrapper.querySelector(".node-toggle");
-      if (toggle) toggle.classList.remove("expanded");
+      const tgl = node.wrapper.querySelector(".node-toggle");
+      if (tgl) tgl.classList.remove("expanded");
     }
   }
 }
 
-// ── Scan ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// SCAN
+// ═══════════════════════════════════════════════════════════════════
 
 async function doScan() {
-  let path = pathInput.value.trim();
-  if (!path) {
-    path = ".";
-    pathInput.value = ".";
-  }
+  let p = pathInput.value.trim();
+  if (!p) { p = "."; pathInput.value = "."; }
 
   showLoading();
 
   try {
-    const result = await invoke("scan_directory", {
-      path: path,
-      showHidden: showHidden.checked,
-    });
+    const result = await invoke("scan_directory", { path: p, showHidden: showHidden.checked });
 
     currentData = result;
     entryMap.clear();
@@ -369,48 +404,49 @@ async function doScan() {
     totalRenderedNodes = 0;
     buildEntryMap(result.children);
 
-    statSize.textContent = result.totalSizeHuman;
+    statSize.textContent  = result.totalSizeHuman;
     statFiles.textContent = result.fileCount.toLocaleString();
-    statDirs.textContent = result.dirCount.toLocaleString();
-    statTime.textContent = `${(result.elapsedMs / 1000).toFixed(2)}s`;
+    statDirs.textContent  = result.dirCount.toLocaleString();
+    statTime.textContent  = `${(result.elapsedMs / 1000).toFixed(2)}s`;
     statsBar.classList.remove("hidden");
+    footerText.textContent = "ANALYZED";
 
     emptyState.style.display = "none";
     treeContent.innerHTML = "";
 
     // Root header
-    const rootWrapper = document.createElement("div");
-    rootWrapper.className = "tree-root";
+    const rootWrap = document.createElement("div");
+    rootWrap.className = "tree-root";
 
-    const rootHeader = document.createElement("div");
-    rootHeader.className = "tree-root-header";
+    const rootHdr = document.createElement("div");
+    rootHdr.className = "tree-root-header";
 
-    const rootIcon = document.createElement("span");
-    rootIcon.className = "node-icon dir";
-    rootIcon.textContent = "◈";
-    rootHeader.appendChild(rootIcon);
+    const rootIco = document.createElement("span");
+    rootIco.className = "node-icon dir";
+    rootIco.textContent = "◉";
+    rootHdr.appendChild(rootIco);
 
-    const rootName = document.createElement("span");
-    rootName.className = "tree-root-name";
-    rootName.textContent = result.rootName + "/";
-    rootName.title = result.rootPath;
-    rootHeader.appendChild(rootName);
+    const rootNm = document.createElement("span");
+    rootNm.className = "tree-root-name";
+    rootNm.textContent = result.rootName + "/";
+    rootNm.title = result.rootPath;
+    rootHdr.appendChild(rootNm);
 
-    const rootSize = document.createElement("span");
-    rootSize.className = "tree-root-size";
-    rootSize.textContent = result.totalSizeHuman;
-    rootHeader.appendChild(rootSize);
+    const rootSz = document.createElement("span");
+    rootSz.className = "tree-root-size";
+    rootSz.textContent = result.totalSizeHuman;
+    rootHdr.appendChild(rootSz);
 
-    rootWrapper.appendChild(rootHeader);
+    rootWrap.appendChild(rootHdr);
 
-    const rootChildren = document.createElement("div");
-    rootChildren.className = "node-children expanded";
-    rootWrapper.appendChild(rootChildren);
+    const rootKids = document.createElement("div");
+    rootKids.className = "node-children expanded";
+    rootWrap.appendChild(rootKids);
 
-    treeContent.appendChild(rootWrapper);
+    treeContent.appendChild(rootWrap);
 
     if (result.children.length > 0) {
-      renderTree(rootChildren, result.children, 0, result.totalSize);
+      renderTree(rootKids, result.children, 0, result.totalSize);
     }
 
     hideLoading();
@@ -421,26 +457,25 @@ async function doScan() {
     entryMap.clear();
     domNodes.clear();
     totalRenderedNodes = 0;
+    footerText.textContent = "ERROR";
     showToast(String(err));
   }
 
-  // Keep input focused so the user can immediately type a new path
   pathInput.focus();
 }
 
-// ── Event Listeners ──────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════════════════════════
 
 scanBtn.addEventListener("click", doScan);
-
-pathInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") doScan();
-});
-
+pathInput.addEventListener("keydown", e => { if (e.key === "Enter") doScan(); });
 collapseAllBtn.addEventListener("click", collapseAll);
 expandAllBtn.addEventListener("click", expandAll);
-
 pathInput.focus();
 
-// ── Init ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
 
-initStarfield();
+initOutrunGrid();

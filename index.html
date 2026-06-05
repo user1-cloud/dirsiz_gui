@@ -3,53 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DirSiz</title>
+    <title>DirSiz — Directory Size Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <canvas id="starfield"></canvas>
+    <!-- Synthwave sky gradient -->
+    <div class="sky-gradient"></div>
+
+    <!-- Outrun grid floor -->
+    <canvas id="outrunGrid"></canvas>
+
+    <!-- Scanline overlay -->
+    <div class="scanlines"></div>
 
     <div id="app">
-      <!-- Header -->
-      <header class="header">
+      <!-- Top bar: logo left, path right -->
+      <header class="topbar">
         <div class="logo">
-          <span class="logo-bracket">[</span>
-          <span class="logo-text">DirSiz</span>
-          <span class="logo-bracket">]</span>
+          <span class="logo-mark">&#9670;</span>
+          <span class="logo-text">DIRSIZ</span>
+          <span class="logo-version">v1.0</span>
         </div>
-        <div class="header-subtitle">Directory Size Analyzer</div>
-      </header>
 
-      <!-- Controls -->
-      <div class="controls">
         <div class="path-input-wrapper">
-          <span class="path-prompt">&gt;</span>
+          <span class="path-prompt">&#9654;</span>
           <input
             id="pathInput"
             type="text"
             class="path-input"
-            placeholder="Enter directory path..."
+            placeholder="target directory ..."
             spellcheck="false"
           />
           <button id="scanBtn" class="btn-scan">
-            <span class="btn-content">SCAN</span>
-            <span class="btn-glow"></span>
+            <span class="btn-label">INIT SCAN</span>
+            <span class="btn-shimmer"></span>
           </button>
         </div>
+      </header>
+
+      <!-- Sub bar -->
+      <div class="subbar">
         <div class="controls-row">
           <label class="toggle-label">
             <input type="checkbox" id="showHidden" />
-            <span class="toggle-text">Show hidden</span>
+            <span class="toggle-track"></span>
+            <span class="toggle-text">hidden</span>
           </label>
-          <button id="collapseAll" class="btn-ghost">Collapse All</button>
-          <button id="expandAll" class="btn-ghost">Expand All</button>
+          <button id="collapseAll" class="btn-ghost">fold all</button>
+          <button id="expandAll" class="btn-ghost">unfold all</button>
         </div>
+        <span class="subbar-label">DISK ANALYZER</span>
       </div>
 
       <!-- Stats bar -->
       <div id="statsBar" class="stats-bar hidden">
         <div class="stat">
-          <span class="stat-label">TOTAL</span>
+          <span class="stat-label">VOLUME</span>
           <span id="statSize" class="stat-value">—</span>
         </div>
         <div class="stat">
@@ -61,7 +73,7 @@
           <span id="statDirs" class="stat-value">—</span>
         </div>
         <div class="stat">
-          <span class="stat-label">TIME</span>
+          <span class="stat-label">ELAPSED</span>
           <span id="statTime" class="stat-value">—</span>
         </div>
       </div>
@@ -69,15 +81,25 @@
       <!-- Tree container -->
       <div id="treeContainer" class="tree-container">
         <div id="loadingIndicator" class="loading hidden">
-          <div class="scan-line"></div>
-          <span class="loading-text">SCANNING...</span>
+          <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-core"></div>
+          </div>
+          <span class="loading-text">scanning sectors<span class="loading-dots"></span></span>
         </div>
         <div id="emptyState" class="empty-state">
-          <div class="empty-icon">◈</div>
-          <div class="empty-text">Enter a path and press SCAN to analyze directory sizes</div>
+          <div class="empty-mark">&#9678;</div>
+          <div class="empty-text">enter a target path and initialize scan</div>
+          <div class="empty-hint">press <kbd>ENTER</kbd> or click INIT SCAN</div>
         </div>
         <div id="treeContent" class="tree-content"></div>
       </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <span class="footer-text">READY</span>
+        <span class="footer-blink">&#9632;</span>
+      </footer>
     </div>
 
     <script type="module" src="/src/main.js"></script>
