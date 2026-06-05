@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DirSiz</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="starfield"></canvas>
+
+    <div id="app">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <span class="logo-bracket">[</span>
+          <span class="logo-text">DirSiz</span>
+          <span class="logo-bracket">]</span>
+        </div>
+        <div class="header-subtitle">Directory Size Analyzer</div>
+      </header>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="path-input-wrapper">
+          <span class="path-prompt">&gt;</span>
+          <input
+            id="pathInput"
+            type="text"
+            class="path-input"
+            placeholder="Enter directory path..."
+            spellcheck="false"
+          />
+          <button id="scanBtn" class="btn-scan">
+            <span class="btn-content">SCAN</span>
+            <span class="btn-glow"></span>
+          </button>
+        </div>
+        <div class="controls-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="showHidden" />
+            <span class="toggle-text">Show hidden</span>
+          </label>
+          <button id="collapseAll" class="btn-ghost">Collapse All</button>
+          <button id="expandAll" class="btn-ghost">Expand All</button>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div id="statsBar" class="stats-bar hidden">
+        <div class="stat">
+          <span class="stat-label">TOTAL</span>
+          <span id="statSize" class="stat-value">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">FILES</span>
+          <span id="statFiles" class="stat-value">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">DIRS</span>
+          <span id="statDirs" class="stat-value">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">TIME</span>
+          <span id="statTime" class="stat-value">—</span>
+        </div>
+      </div>
+
+      <!-- Tree container -->
+      <div id="treeContainer" class="tree-container">
+        <div id="loadingIndicator" class="loading hidden">
+          <div class="scan-line"></div>
+          <span class="loading-text">SCANNING...</span>
+        </div>
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">◈</div>
+          <div class="empty-text">Enter a path and press SCAN to analyze directory sizes</div>
+        </div>
+        <div id="treeContent" class="tree-content"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
