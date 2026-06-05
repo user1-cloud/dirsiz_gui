@@ -54,27 +54,15 @@
           </label>
           <button id="collapseAll" class="btn-ghost">fold all</button>
           <button id="expandAll" class="btn-ghost">unfold all</button>
-        </div>
-        <span class="subbar-label">DISK ANALYZER</span>
-      </div>
-
-      <!-- Stats bar -->
-      <div id="statsBar" class="stats-bar hidden">
-        <div class="stat">
-          <span class="stat-label">VOLUME</span>
-          <span id="statSize" class="stat-value">—</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">FILES</span>
-          <span id="statFiles" class="stat-value">—</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">DIRS</span>
-          <span id="statDirs" class="stat-value">—</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">ELAPSED</span>
-          <span id="statTime" class="stat-value">—</span>
+          <div id="statsBar" class="stats-inline hidden">
+            <span class="stat-inline"><span class="stat-label">VOL</span><span id="statSize" class="stat-value">—</span></span>
+            <span class="stat-sep"></span>
+            <span class="stat-inline"><span class="stat-label">FILES</span><span id="statFiles" class="stat-value">—</span></span>
+            <span class="stat-sep"></span>
+            <span class="stat-inline"><span class="stat-label">DIRS</span><span id="statDirs" class="stat-value">—</span></span>
+            <span class="stat-sep"></span>
+            <span class="stat-inline"><span class="stat-label">TIME</span><span id="statTime" class="stat-value">—</span></span>
+          </div>
         </div>
       </div>
 
@@ -99,6 +87,7 @@
       <footer class="footer">
         <span class="footer-text">READY</span>
         <span class="footer-blink">&#9632;</span>
+        <span id="footerProgress" class="footer-progress"></span>
       </footer>
     </div>
 
