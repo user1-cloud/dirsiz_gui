@@ -125,76 +125,6 @@ fn walk_serial(
     Ok(entries)
 }
 
-// ── Parallel walk (jwalk) ────────────────────────────────────────────
-
-fn walk_parallel(
-    root: &Path,
-    show_hidden: bool,
-    threads: usize,
-    app: &tauri::AppHandle,
-    start: Instant,
-) -> Result<Vec<Entry>, String> {
-    let wd = jwalk::WalkDir::new(root)
-        .skip_hidden(!show_hidden)
-        .parallelism(jwalk::Parallelism::RayonNewPool(threads));
-
-    let mut files: u64 = 0;
-    let mut bytes: u64 = 0;
-    let tick = Duration::from_millis(100);
-    let mut next_tick = start + tick;
-    let mut entries: Vec<Entry> = Vec::with_capacity(200_000);
-
-    for entry in wd.into_iter().filter_map(|e| e.ok()) {
-        let path = entry.path();
-        let depth = path.components().count() as u32;
-        let is_dir = entry.file_type().is_dir();
-        let size = if is_dir {
-            0
-        } else {
-            entry.metadata().map(|m| m.len()).unwrap_or(0)
-        };
-
-        files += 1;
-        bytes += size;
-        entries.push(Entry { path, size, depth, is_dir });
-
-        let now = Instant::now();
-        if now >= next_tick {
-            let _ = app.emit(
-                "scan-progress",
-                ProgressPayload {
-                    files,
-                    bytes,
-                    bytes_human: human_size(bytes),
-                },
-            );
-            next_tick = now + tick;
-        }
-    }
-
-    Ok(entries)
-}
-
-// ── Auto-detect serial vs parallel ────────────────────────────────────
-
-fn auto_walk(
-    root: &Path,
-    show_hidden: bool,
-    app: &tauri::AppHandle,
-    start: Instant,
-) -> Result<Vec<Entry>, String> {
-    let top_count = std::fs::read_dir(root).map(|rd| rd.count()).unwrap_or(0);
-    // > 100 top-level entries signals a large directory worth parallelizing
-    if top_count > 100 {
-        let threads = std::thread::available_parallelism()
-            .map(|n| n.get().min(8))
-            .unwrap_or(4);
-        walk_parallel(root, show_hidden, threads, app, start)
-    } else {
-        walk_serial(root, show_hidden, app, start)
-    }
-}
-
 // ── Size propagation + tree build ─────────────────────────────────────
 
 fn propagate_and_build(
@@ -299,7 +229,7 @@ pub fn scan_directory(
         return Err(format!("'{}' is not a directory", root.display()));
     }
 
-    let entries = auto_walk(&root, show_hidden, &app, start)?;
+    let entries = walk_serial(&root, show_hidden, &app, start)?;
 
     if entries.is_empty() {
         return Ok(ScanResult {
@@ -358,7 +288,7 @@ pub fn expand_directory(
     }
 
     let start = Instant::now();
-    let entries = auto_walk(&dir, show_hidden, &app, start)?;
+    let entries = walk_serial(&dir, show_hidden, &app, start)?;
 
     if entries.is_empty() {
         return Ok(vec![]);
