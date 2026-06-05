@@ -34,11 +34,12 @@
             id="pathInput"
             type="text"
             class="path-input"
+            data-i18n-placeholder="placeholder"
             placeholder="target directory ..."
             spellcheck="false"
           />
           <button id="scanBtn" class="btn-scan">
-            <span class="btn-label">INIT SCAN</span>
+            <span class="btn-label" data-i18n="scan">INIT SCAN</span>
             <span class="btn-shimmer"></span>
           </button>
         </div>
@@ -50,17 +51,19 @@
           <label class="toggle-label">
             <input type="checkbox" id="showHidden" />
             <span class="toggle-track"></span>
-            <span class="toggle-text">hidden</span>
+            <span class="toggle-text" data-i18n="hidden">hidden</span>
           </label>
-          <button id="collapseAll" class="btn-ghost">fold all</button>
+          <button id="collapseAll" class="btn-ghost" data-i18n="foldAll">fold all</button>
+          <button id="fontToggle" class="btn-ghost" title="Toggle font">font</button>
+          <button id="langToggle" class="btn-ghost" title="Switch language">中 / EN</button>
           <div id="statsBar" class="stats-inline hidden">
-            <span class="stat-inline"><span class="stat-label">VOL</span><span id="statSize" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statVol">VOL</span><span id="statSize" class="stat-value">—</span></span>
             <span class="stat-sep"></span>
-            <span class="stat-inline"><span class="stat-label">FILES</span><span id="statFiles" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statFiles">FILES</span><span id="statFiles" class="stat-value">—</span></span>
             <span class="stat-sep"></span>
-            <span class="stat-inline"><span class="stat-label">DIRS</span><span id="statDirs" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statDirs">DIRS</span><span id="statDirs" class="stat-value">—</span></span>
             <span class="stat-sep"></span>
-            <span class="stat-inline"><span class="stat-label">TIME</span><span id="statTime" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statTime">TIME</span><span id="statTime" class="stat-value">—</span></span>
           </div>
         </div>
       </div>
@@ -72,19 +75,19 @@
             <div class="spinner-ring"></div>
             <div class="spinner-core"></div>
           </div>
-          <span class="loading-text">scanning sectors<span class="loading-dots"></span></span>
+          <span class="loading-text" data-i18n="scanning">scanning sectors<span class="loading-dots"></span></span>
         </div>
         <div id="emptyState" class="empty-state">
           <div class="empty-mark">&#9678;</div>
-          <div class="empty-text">enter a target path and initialize scan</div>
-          <div class="empty-hint">press <kbd>ENTER</kbd> or click INIT SCAN</div>
+          <div class="empty-text" data-i18n="emptyText">enter a target path and initialize scan</div>
+          <div class="empty-hint" data-i18n="emptyHint">press <kbd>ENTER</kbd> or click INIT SCAN</div>
         </div>
         <div id="treeContent" class="tree-content"></div>
       </div>
 
       <!-- Footer -->
       <footer class="footer">
-        <span class="footer-text">READY</span>
+        <span id="footerText" class="footer-text" data-i18n="footerReady">READY</span>
         <span class="footer-blink">&#9632;</span>
         <span id="footerProgress" class="footer-progress"></span>
       </footer>

@@ -2,6 +2,14 @@
    DIRSIZ — Synthwave Datacore
    ═══════════════════════════════════════════════════════════════════ */
 
+@font-face {
+  font-family: 'HYPixel11pxU';
+  src: url('./assets/fonts/HYPixel11pxU-2.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Depth layers */
   --void:     #04060f;
@@ -34,12 +42,18 @@
   --glow-amber:  0 0 10px #ffb62744;
 
   /* Typography */
-  --font-display: 'Orbitron', system-ui, sans-serif;
-  --font-mono:    'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+  --font-display: 'HYPixel11pxU', 'Orbitron', system-ui, sans-serif;
+  --font-mono:    'HYPixel11pxU', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
 
   /* Spacing */
   --gap: 10px;
   --radius: 2px;
+}
+
+/* Font toggle: system mode drops pixel font */
+.font-system {
+  --font-display: 'Orbitron', system-ui, sans-serif;
+  --font-mono:    'Cascadia Code', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,7 +64,7 @@ html, body {
   background: var(--void);
   color: var(--text-main);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.6;
   user-select: none;
   -webkit-user-select: none;
@@ -127,7 +141,7 @@ html, body {
 }
 
 .logo-mark {
-  font-size: 14px;
+  font-size: 20px;
   color: var(--pink);
   text-shadow: var(--glow-pink);
   animation: logoMarkPulse 2.5s ease-in-out infinite;
@@ -140,7 +154,7 @@ html, body {
 
 .logo-text {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 900;
   letter-spacing: 4px;
   background: linear-gradient(180deg, #e8e8f8 0%, #8890c0 40%, #e8e8f8 100%);
@@ -152,7 +166,7 @@ html, body {
 
 .logo-version {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 11px;
   color: var(--text-faint);
   letter-spacing: 2px;
   padding: 1px 5px;
@@ -174,7 +188,7 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 5px 10px;
+  padding: 6px 12px;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
   clip-path: polygon(
     0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 8px) 100%, 0 100%
@@ -188,7 +202,7 @@ html, body {
 
 .path-prompt {
   color: var(--pink);
-  font-size: 10px;
+  font-size: 14px;
   text-shadow: var(--glow-pink);
   animation: promptPulse 1.8s ease-in-out infinite;
   flex-shrink: 0;
@@ -206,7 +220,7 @@ html, body {
   outline: none;
   color: var(--cyan-bright);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 500;
   padding: 4px 0;
   caret-color: var(--pink);
@@ -226,10 +240,10 @@ html, body {
   border: 1px solid var(--cyan);
   color: var(--cyan);
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 3px;
-  padding: 5px 14px;
+  padding: 8px 18px;
   cursor: pointer;
   overflow: hidden;
   transition: all 0.25s ease;
@@ -323,7 +337,7 @@ html, body {
 
 .toggle-text {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 13px;
   color: var(--text-sub);
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -335,10 +349,10 @@ html, body {
   border: 1px solid transparent;
   color: var(--text-sub);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 4px 10px;
+  padding: 5px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -356,14 +370,6 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 0 2px;
-}
-
-.subbar-label {
-  font-family: var(--font-display);
-  font-size: 7px;
-  letter-spacing: 3px;
-  color: var(--text-faint);
-  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -387,14 +393,14 @@ html, body {
 
 .stat-inline .stat-label {
   font-family: var(--font-display);
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 1.5px;
   color: var(--text-faint);
 }
 
 .stat-inline .stat-value {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--cyan-bright);
   text-shadow: 0 0 6px #00e5ff33;
@@ -402,7 +408,7 @@ html, body {
 
 .stat-sep {
   width: 1px;
-  height: 10px;
+  height: 15px;
   background: var(--border);
   flex-shrink: 0;
 }
@@ -448,7 +454,7 @@ html, body {
 }
 
 .empty-mark {
-  font-size: 40px;
+  font-size: 44px;
   color: var(--pink);
   text-shadow: var(--glow-pink);
   animation: emptyFloat 3s ease-in-out infinite;
@@ -461,20 +467,20 @@ html, body {
 
 .empty-text {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 16px;
   color: var(--text-sub);
   letter-spacing: 1px;
 }
 
 .empty-hint {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 13px;
   color: var(--text-faint);
 }
 
 .empty-hint kbd {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   padding: 2px 6px;
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -532,7 +538,7 @@ html, body {
 
 .loading-text {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 5px;
   color: var(--cyan);
   text-shadow: 0 0 10px #00e5ff55;
@@ -577,7 +583,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 14px;
+  padding: 10px 14px;
   background: linear-gradient(90deg, #ff2d7808 0%, transparent 60%);
   border-left: 2px solid var(--pink);
   position: relative;
@@ -598,14 +604,14 @@ html, body {
 
 .tree-root-name {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text-main);
 }
 
 .tree-root-size {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--pink-hot);
   text-shadow: var(--glow-pink);
@@ -627,9 +633,9 @@ html, body {
 .node-row {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px 3px 4px;
-  min-height: 26px;
+  gap: 6px;
+  padding: 5px 8px 5px 6px;
+  min-height: 34px;
   cursor: pointer;
   position: relative;
   transition: background 0.15s ease;
@@ -655,14 +661,14 @@ html, body {
 
 /* Toggle */
 .node-toggle {
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: var(--text-faint);
-  font-size: 7px;
+  font-size: 11px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -681,9 +687,9 @@ html, body {
 
 /* Icons */
 .node-icon {
-  font-size: 11px;
+  font-size: 16px;
   flex-shrink: 0;
-  width: 14px;
+  width: 20px;
   text-align: center;
 }
 
@@ -693,7 +699,7 @@ html, body {
 /* Name */
 .node-name {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -707,11 +713,11 @@ html, body {
 /* Size */
 .node-size {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 15px;
   font-weight: 600;
   margin-left: auto;
   flex-shrink: 0;
-  padding-left: 14px;
+  padding-left: 16px;
   transition: color 0.15s ease, text-shadow 0.15s ease;
 }
 
@@ -749,7 +755,7 @@ html, body {
 /* Mini loader inside tree nodes */
 .node-loading {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 13px;
   color: var(--text-faint);
   padding: 4px 0;
   animation: loadingPulse 1.2s ease-in-out infinite;
@@ -761,7 +767,7 @@ html, body {
 
 .node-tooltip-inline {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 14px;
   color: var(--cyan);
   padding: 2px 8px 2px 26px;
   pointer-events: none;
@@ -774,7 +780,7 @@ html, body {
 
 @keyframes tipIn {
   from { opacity: 0; max-height: 0; }
-  to   { opacity: 1; max-height: 18px; }
+  to   { opacity: 1; max-height: 20px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -787,7 +793,7 @@ html, body {
   right: 28px;
   z-index: 200;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   background: #0c0510;
   border: 1px solid var(--pink);
   color: var(--pink-hot);
@@ -824,13 +830,13 @@ html, body {
 
 .footer-text {
   font-family: var(--font-display);
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 3px;
   color: var(--text-faint);
 }
 
 .footer-blink {
-  font-size: 6px;
+  font-size: 10px;
   color: var(--cyan);
   text-shadow: 0 0 6px #00e5ff88;
   animation: blink 1s step-end infinite;
@@ -838,7 +844,7 @@ html, body {
 
 .footer-progress {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 13px;
   color: var(--text-sub);
   margin-left: auto;
 }
@@ -855,12 +861,12 @@ html, body {
 @media (max-width: 800px) {
   #app { padding: 10px 10px var(--gap); }
 
-  .logo-text { font-size: 20px; letter-spacing: 3px; }
+  .logo-text { font-size: 24px; letter-spacing: 3px; }
 
   .stats-inline { gap: 4px; }
-  .stat-inline .stat-value { font-size: 9px; }
+  .stat-inline .stat-value { font-size: 12px; }
 
-  .btn-scan { padding: 6px 12px; font-size: 9px; letter-spacing: 2px; }
+  .btn-scan { padding: 6px 12px; font-size: 12px; letter-spacing: 2px; }
 }
 
 @media (max-width: 500px) {

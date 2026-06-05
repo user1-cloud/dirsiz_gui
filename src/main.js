@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { initI18n, t, toggleLang, getLang } from "./i18n.js";
 
 // ═══════════════════════════════════════════════════════════════════
 // OUTRUN PERSPECTIVE GRID
@@ -100,8 +101,10 @@ const statTime       = document.getElementById("statTime");
 const loadingInd     = document.getElementById("loadingIndicator");
 const emptyState     = document.getElementById("emptyState");
 const treeContent    = document.getElementById("treeContent");
-const footerText     = document.querySelector(".footer-text");
+const footerText     = document.getElementById("footerText");
 const footerProgress = document.getElementById("footerProgress");
+const langToggle     = document.getElementById("langToggle");
+const fontToggle     = document.getElementById("fontToggle");
 
 // ═══════════════════════════════════════════════════════════════════
 // PROGRESS EVENTS FROM BACKEND
@@ -138,13 +141,13 @@ function showLoading() {
   emptyState.style.display = "none";
   treeContent.innerHTML = "";
   statsBar.classList.add("hidden");
-  footerText.textContent = "SCANNING";
+  footerText.textContent = t("footerScanning");
   clearProgress();
 }
 
 function hideLoading() {
   loadingInd.classList.add("hidden");
-  footerText.textContent = "READY";
+  footerText.textContent = t("footerReady");
   clearProgress();
 }
 
@@ -208,7 +211,7 @@ function renderNodeRow(entry, depth, isDir, hasKids, parentSize) {
   const row = document.createElement("div");
   row.className = "node-row";
   if (isDir) row.classList.add("dir-row");
-  row.style.paddingLeft = `${depth * 18 + 6}px`;
+  row.style.paddingLeft = `${depth * 22 + 8}px`;
 
   const toggle = makeToggle(hasKids && isDir, false);
   row.appendChild(toggle);
@@ -280,7 +283,7 @@ function renderTree(container, children, depth = 0, parentSize = null, stagger =
           // Show mini loader
           const miniLoad = document.createElement("div");
           miniLoad.className = "node-loading";
-          miniLoad.textContent = "loading ...";
+          miniLoad.textContent = t("loading");
           miniLoad.style.paddingLeft = `${(depth + 1) * 18 + 6}px`;
           kidContainer.appendChild(miniLoad);
 
@@ -340,11 +343,10 @@ let activeTooltip = null;
 
 function showTooltip(text, row) {
   hideTooltip();
-  const wrapper = row.closest(".tree-node") || row.parentElement;
   const tip = document.createElement("div");
   tip.className = "node-tooltip-inline";
   tip.textContent = text;
-  wrapper.insertAdjacentElement("afterend", tip);
+  row.insertAdjacentElement("afterend", tip);
   activeTooltip = { tip };
 }
 
@@ -392,7 +394,7 @@ async function doScan() {
     statDirs.textContent  = result.dirCount.toLocaleString();
     statTime.textContent  = `${(result.elapsedMs / 1000).toFixed(2)}s`;
     statsBar.classList.remove("hidden");
-    footerText.textContent = "ANALYZED";
+    footerText.textContent = t("footerAnalyzed");
 
     emptyState.style.display = "none";
     treeContent.innerHTML = "";
@@ -440,7 +442,7 @@ async function doScan() {
     domNodes.clear();
     totalRenderedNodes = 0;
     loadingPaths.clear();
-    footerText.textContent = "ERROR";
+    footerText.textContent = t("footerError");
     showToast(String(err));
   }
 
@@ -454,10 +456,43 @@ async function doScan() {
 scanBtn.addEventListener("click", doScan);
 pathInput.addEventListener("keydown", e => { if (e.key === "Enter") doScan(); });
 collapseAllBtn.addEventListener("click", collapseAll);
+langToggle.addEventListener("click", () => {
+  toggleLang();
+  if (currentData) {
+    // refresh dynamic footer text after language switch
+    footerText.textContent = t("footerAnalyzed");
+  } else {
+    footerText.textContent = t("footerReady");
+  }
+  langToggle.textContent = getLang() === "zh" ? "EN / 中" : "中 / EN";
+});
 pathInput.focus();
 
 // ═══════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════
+
+initI18n();
+langToggle.textContent = getLang() === "zh" ? "EN / 中" : "中 / EN";
+
+// Font toggle
+const FONT_KEY = "dirsiz-font";
+if (localStorage.getItem(FONT_KEY) === "system") {
+  document.documentElement.classList.add("font-system");
+  fontToggle.textContent = "pixel";
+} else {
+  fontToggle.textContent = "font";
+}
+fontToggle.addEventListener("click", () => {
+  const el = document.documentElement;
+  el.classList.toggle("font-system");
+  if (el.classList.contains("font-system")) {
+    localStorage.setItem(FONT_KEY, "system");
+    fontToggle.textContent = "pixel";
+  } else {
+    localStorage.setItem(FONT_KEY, "pixel");
+    fontToggle.textContent = "font";
+  }
+});
 
 initOutrunGrid();

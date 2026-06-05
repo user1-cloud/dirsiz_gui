@@ -1,0 +1,19 @@
+{
+  "placeholder": "target directory ...",
+  "scan": "INIT SCAN",
+  "hidden": "hidden",
+  "foldAll": "fold all",
+  "statVol": "VOL",
+  "statFiles": "FILES",
+  "statDirs": "DIRS",
+  "statTime": "TIME",
+  "scanning": "scanning sectors",
+  "emptyText": "enter a target path and initialize scan",
+  "emptyHint": "press <kbd>ENTER</kbd> or click INIT SCAN",
+  "footerReady": "READY",
+  "footerScanning": "SCANNING",
+  "footerAnalyzed": "ANALYZED",
+  "footerError": "ERROR",
+  "loading": "loading ...",
+  "toastCapped": "Expansion capped at {0} nodes. Manually expand specific folders for deeper inspection."
+}
