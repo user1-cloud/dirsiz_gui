@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════════════
+   History dropdown
+   ═══════════════════════════════════════════════════════════════════ */
+
+.hist-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 2px;
+  background: var(--deep);
+  border: 1px solid var(--border);
+  z-index: 100;
+  max-height: 320px;
+  overflow-y: auto;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+
+.hist-dropdown.hidden { display: none; }
+
+.hist-dropdown::-webkit-scrollbar { width: 4px; }
+.hist-dropdown::-webkit-scrollbar-track { background: transparent; }
+.hist-dropdown::-webkit-scrollbar-thumb { background: var(--border); }
+
+.hist-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  border-bottom: 1px solid #ffffff03;
+}
+
+.hist-item:last-child { border-bottom: none; }
+
+.hist-item:hover,
+.hist-item.active {
+  background: #00e5ff0d;
+  border-left: 2px solid var(--cyan);
+}
+
+.hist-path {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  transition: color 0.15s ease;
+}
+
+.hist-item:hover .hist-path,
+.hist-item.active .hist-path {
+  color: var(--cyan-bright);
+}
+
+.hist-del {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  margin-left: 8px;
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+  line-height: 1;
+}
+
+.hist-del:hover {
+  color: var(--pink-hot);
+  text-shadow: 0 0 6px #ff2d7855;
+}

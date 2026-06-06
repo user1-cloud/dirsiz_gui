@@ -1,12 +1,22 @@
+mod cancel;
 mod commands;
+mod models;
+mod scanner_walk;
+mod tree;
+mod tree_cache;
 
-use commands::{cancel_scan, expand_directory, scan_directory};
+use cancel::cancel_scan;
+use commands::{expand_directory, scan_directory};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![scan_directory, expand_directory, cancel_scan])
+        .invoke_handler(tauri::generate_handler![
+            scan_directory,
+            expand_directory,
+            cancel_scan
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

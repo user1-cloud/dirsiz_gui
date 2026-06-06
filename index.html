@@ -10,17 +10,11 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- Synthwave sky gradient -->
     <div class="sky-gradient"></div>
-
-    <!-- Outrun grid floor -->
     <canvas id="outrunGrid"></canvas>
-
-    <!-- Scanline overlay -->
     <div class="scanlines"></div>
 
     <div id="app">
-      <!-- Top bar: logo left, path right -->
       <header class="topbar">
         <div class="logo">
           <span class="logo-mark">&#9670;</span>
@@ -33,15 +27,9 @@
             <div class="path-input-outer">
               <div class="path-input-wrapper">
                 <span class="path-prompt">&#9654;</span>
-                <input
-                  id="pathInput"
-                  type="text"
-                  class="path-input"
-                  data-i18n-placeholder="placeholder"
-                  placeholder="target directory ..."
-                  autocomplete="off"
-                  spellcheck="false"
-                />
+                <input id="pathInput" type="text" class="path-input"
+                  data-i18n-placeholder="placeholder" placeholder="target directory ..."
+                  autocomplete="off" spellcheck="false" />
               </div>
             </div>
           </div>
@@ -54,7 +42,6 @@
         </div>
       </header>
 
-      <!-- Sub bar -->
       <div class="subbar">
         <div class="controls-row">
           <label class="toggle-label">
@@ -62,22 +49,26 @@
             <span class="toggle-track"></span>
             <span class="toggle-text" data-i18n="hidden">hidden</span>
           </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="forceWalkdir" />
+            <span class="toggle-track"></span>
+            <span class="toggle-text">walkdir</span>
+          </label>
           <button id="collapseAll" class="btn-ghost" data-i18n="foldAll">fold all</button>
           <button id="fontToggle" class="btn-ghost" title="Toggle font">font</button>
           <button id="langToggle" class="btn-ghost" title="Switch language">中 / EN</button>
           <div id="statsBar" class="stats-inline hidden">
-            <span class="stat-inline"><span class="stat-label" data-i18n="statVol">VOL</span><span id="statSize" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statVol">VOL</span><span id="statSize" class="stat-value">&mdash;</span></span>
             <span class="stat-sep"></span>
-            <span class="stat-inline"><span class="stat-label" data-i18n="statFiles">FILES</span><span id="statFiles" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statFiles">FILES</span><span id="statFiles" class="stat-value">&mdash;</span></span>
             <span class="stat-sep"></span>
-            <span class="stat-inline"><span class="stat-label" data-i18n="statDirs">DIRS</span><span id="statDirs" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statDirs">DIRS</span><span id="statDirs" class="stat-value">&mdash;</span></span>
             <span class="stat-sep"></span>
-            <span class="stat-inline"><span class="stat-label" data-i18n="statTime">TIME</span><span id="statTime" class="stat-value">—</span></span>
+            <span class="stat-inline"><span class="stat-label" data-i18n="statTime">TIME</span><span id="statTime" class="stat-value">&mdash;</span></span>
           </div>
         </div>
       </div>
 
-      <!-- Tree container -->
       <div class="tree-outer">
         <div id="treeContainer" class="tree-container">
         <div id="loadingIndicator" class="loading hidden">
@@ -96,7 +87,6 @@
         </div>
       </div>
 
-      <!-- Footer -->
       <footer class="footer">
         <span id="footerText" class="footer-text" data-i18n="footerReady">READY</span>
         <span class="footer-blink">&#9632;</span>
@@ -104,6 +94,6 @@
       </footer>
     </div>
 
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

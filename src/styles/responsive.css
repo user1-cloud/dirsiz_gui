@@ -1,0 +1,20 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Responsive breakpoints
+   ═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 800px) {
+  #app { padding: 10px 10px var(--gap); }
+  .logo-text { font-size: 24px; letter-spacing: 3px; }
+  .stats-inline { gap: 4px; }
+  .stat-inline .stat-value { font-size: 12px; }
+  .btn-scan { padding: 4px 10px; font-size: 12px; letter-spacing: 2px; }
+}
+
+@media (max-width: 500px) {
+  .path-bar { flex-wrap: wrap; gap: 6px; }
+  .path-input-anchor { flex: 0 0 100%; }
+  .path-input-wrapper {
+    clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+  }
+  .btn-scan-outer { width: 100%; }
+}

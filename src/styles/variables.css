@@ -1,0 +1,64 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Variables, fonts, reset
+   ═══════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'HYPixel11pxU';
+  src: url('../assets/fonts/HYPixel11pxU-2.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --void:     #04060f;
+  --abyss:    #090c1a;
+  --deep:     #0c1028;
+  --surface:  #111838;
+
+  --cyan:       #00e5ff;
+  --cyan-bright:#66f0ff;
+  --pink:       #ff2d78;
+  --pink-hot:   #ff6699;
+  --amber:      #ffb627;
+  --green:      #00ff88;
+  --violet:     #a855f7;
+  --electric:   #4488ff;
+
+  --text-main:   #d0d6e8;
+  --text-sub:    #909ab8;
+  --text-faint:  #5a6490;
+
+  --border:       #1e2860;
+  --border-neon:  #00e5ff44;
+  --chrome:       linear-gradient(180deg, #1a2050 0%, #0c1030 50%, #1a2050 100%);
+
+  --glow-cyan:   0 0 12px #00e5ff55, 0 0 4px #00e5ff33;
+  --glow-pink:   0 0 14px #ff2d7855, 0 0 4px #ff2d7833;
+  --glow-amber:  0 0 10px #ffb62744;
+
+  --font-display: 'HYPixel11pxU', 'Orbitron', system-ui, sans-serif;
+  --font-mono:    'HYPixel11pxU', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+
+  --gap: 10px;
+  --radius: 2px;
+}
+
+.font-system {
+  --font-display: 'Orbitron', system-ui, sans-serif;
+  --font-mono:    'Cascadia Code', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1.6;
+  user-select: none;
+  -webkit-user-select: none;
+}

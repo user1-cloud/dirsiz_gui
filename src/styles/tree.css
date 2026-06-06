@@ -1,0 +1,304 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Tree — container, nodes, root, empty state, tooltip, mini-loader
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tree outer/inner ────────────────────────────────────────────── */
+
+.tree-outer {
+  flex: 1;
+  background: var(--border);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  padding: 1px;
+  border-radius: var(--radius);
+  min-height: 0;
+  display: flex;
+}
+
+.tree-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--abyss);
+  position: relative;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
+.tree-container::-webkit-scrollbar { width: 5px; }
+.tree-container::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
+.tree-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0; }
+.tree-container::-webkit-scrollbar-thumb:hover { background: #2a3870; }
+
+.tree-content {
+  padding: 6px 8px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  opacity: 0.6;
+}
+
+.empty-mark {
+  font-size: 44px;
+  color: var(--pink);
+  text-shadow: var(--glow-pink);
+  animation: emptyFloat 3s ease-in-out infinite;
+}
+
+@keyframes emptyFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-6px) rotate(1deg); }
+}
+
+.empty-text {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-sub);
+  letter-spacing: 1px;
+}
+
+.empty-hint {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.empty-hint kbd {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text-sub);
+  margin: 0 2px;
+  clip-path: polygon(2px 0, 100% 0, 100% calc(100% - 2px), calc(100% - 2px) 100%, 0 100%, 0 2px);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* ── Root node ───────────────────────────────────────────────────── */
+
+.tree-root {
+  margin-bottom: 4px;
+  animation: nodeEnter 0.45s ease both;
+}
+
+.tree-root-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(90deg, #ff2d7808 0%, transparent 60%);
+  border-left: 2px solid var(--pink);
+  position: relative;
+}
+
+.tree-root-header::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  background: var(--pink);
+  box-shadow: var(--glow-pink);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.tree-root-name {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.tree-root-size {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--cyan);
+  text-shadow: 0 0 6px #00e5ff44;
+  margin-left: auto;
+  padding-right: 18px;
+}
+
+/* ── Tree nodes ──────────────────────────────────────────────────── */
+
+.tree-node {
+  animation: nodeEnter 0.3s ease both;
+}
+
+@keyframes nodeEnter {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.node-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 5px 6px;
+  min-height: 34px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.node-row:hover { background: #ffffff04; }
+
+.node-row::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px #00e5ff88;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.node-row:hover::after { opacity: 1; }
+
+/* ── Toggle ──────────────────────────────────────────────────────── */
+
+.node-toggle {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 11px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.node-toggle.has-children {
+  color: var(--cyan);
+  cursor: pointer;
+}
+
+.node-toggle.has-children:hover {
+  text-shadow: 0 0 8px #00e5ff88;
+  transform: scale(1.3);
+}
+
+.node-toggle.expanded { transform: rotate(90deg); }
+.node-toggle.expanded:hover { transform: rotate(90deg) scale(1.3); }
+
+/* ── Icons ───────────────────────────────────────────────────────── */
+
+.node-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.node-icon.dir  { color: var(--cyan);   text-shadow: 0 0 6px #00e5ff44; }
+.node-icon.file { color: var(--text-faint); }
+
+/* ── Name ────────────────────────────────────────────────────────── */
+
+.node-name {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0 2px;
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+/* ── Size ────────────────────────────────────────────────────────── */
+
+.node-size {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding-left: 16px;
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+/* ── Size bar ────────────────────────────────────────────────────── */
+
+.node-size-bar-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+  opacity: 0.12;
+  transition: opacity 0.2s ease, height 0.2s ease;
+}
+
+.node-row:hover .node-size-bar-bg {
+  opacity: 0.35;
+  height: 2px;
+}
+
+/* ── Children container ──────────────────────────────────────────── */
+
+.node-children {
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
+  opacity: 0;
+}
+
+.node-children.expanded {
+  max-height: 20000px;
+  opacity: 1;
+  border-left: 1px solid #ffffff04;
+  margin-left: 11px;
+}
+
+/* ── Mini loader ─────────────────────────────────────────────────── */
+
+.node-loading {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-faint);
+  padding: 4px 0;
+  animation: loadingPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.8; }
+}
+
+/* ── Inline tooltip ──────────────────────────────────────────────── */
+
+.node-tooltip-inline {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--cyan);
+  padding: 2px 8px 2px 26px;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 1px solid #00e5ff22;
+  animation: tipIn 0.15s ease;
+}
+
+@keyframes tipIn {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 20px; }
+}

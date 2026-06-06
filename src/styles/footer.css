@@ -1,0 +1,120 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Footer — status text, blink states, progress, toast
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Footer bar ──────────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.footer-text {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--text-faint);
+}
+
+.footer-progress {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-left: auto;
+}
+
+/* ── Blink indicator ─────────────────────────────────────────────── */
+
+.footer-blink {
+  font-size: 10px;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.blink-idle {
+  color: var(--green);
+  text-shadow: 0 0 6px #00ff8855;
+  animation: blinkIdle 3s ease-in-out infinite;
+}
+@keyframes blinkIdle {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.7; }
+}
+
+.blink-scanning {
+  color: var(--cyan);
+  text-shadow: 0 0 6px #00e5ff88;
+  animation: blinkScan 0.5s step-end infinite;
+}
+@keyframes blinkScan {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+.blink-building {
+  color: var(--amber);
+  text-shadow: 0 0 8px #ffb62766;
+  animation: blinkBuild 0.8s ease-in-out infinite;
+}
+@keyframes blinkBuild {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+
+.blink-done {
+  color: var(--cyan);
+  text-shadow: 0 0 6px #00e5ff88;
+  animation: blinkDone 2s ease-in-out infinite;
+}
+@keyframes blinkDone {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+.blink-error {
+  color: var(--pink-hot);
+  text-shadow: 0 0 8px #ff2d7888;
+  animation: blinkError 0.4s step-end infinite;
+}
+@keyframes blinkError {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* ── Toast ───────────────────────────────────────────────────────── */
+
+.toast-outer {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 200;
+  background: var(--pink);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  padding: 1px;
+  max-width: 440px;
+  box-shadow: 0 0 20px #ff2d7833;
+  animation: toastIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: #0c0510;
+  color: var(--pink-hot);
+  padding: 10px 16px;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast-outer.out {
+  animation: toastOut 0.25s ease forwards;
+}
+
+@keyframes toastOut {
+  to { opacity: 0; transform: translateX(16px); }
+}

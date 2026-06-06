@@ -1,0 +1,327 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Header — logo, path bar, scan button, controls, stats
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Top bar ─────────────────────────────────────────────────────── */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* ── Logo ────────────────────────────────────────────────────────── */
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  font-size: 20px;
+  color: var(--pink);
+  text-shadow: var(--glow-pink);
+  animation: logoMarkPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes logoMarkPulse {
+  0%, 100% { text-shadow: 0 0 12px #ff2d7855, 0 0 3px #ff2d7844; }
+  50%      { text-shadow: 0 0 22px #ff2d7888, 0 0 6px #ff2d7866; }
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  background: linear-gradient(180deg, #e8e8f8 0%, #8890c0 40%, #e8e8f8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px #8899ff44);
+}
+
+.logo-version-outer {
+  background: var(--border);
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+  padding: 1px;
+  border-radius: var(--radius);
+}
+
+.logo-version {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 2px;
+  padding: 1px 5px;
+  background: var(--surface);
+  clip-path: polygon(2px 0, 100% 0, 100% calc(100% - 2px), calc(100% - 2px) 100%, 0 100%, 0 2px);
+}
+
+/* ── Path bar ────────────────────────────────────────────────────── */
+
+.path-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.path-input-anchor {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.path-input-outer {
+  background: var(--border);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  padding: 1px;
+  border-radius: var(--radius);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.path-input-outer:focus-within {
+  background: var(--cyan);
+  box-shadow: 0 0 0 1px #00e5ff14, var(--glow-cyan);
+}
+
+.path-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  padding: 2px 10px;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
+.path-prompt {
+  color: var(--pink);
+  font-size: 14px;
+  text-shadow: var(--glow-pink);
+  animation: promptPulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes promptPulse {
+  0%, 100% { opacity: 1;  transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.9); }
+}
+
+.path-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--cyan-bright);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 4px 0;
+  caret-color: var(--pink);
+}
+
+.path-input::placeholder {
+  color: var(--text-faint);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.path-input:-webkit-autofill,
+.path-input:-webkit-autofill:hover,
+.path-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset !important;
+  -webkit-text-fill-color: var(--cyan-bright) !important;
+  caret-color: var(--pink);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ── Scan button ─────────────────────────────────────────────────── */
+
+.btn-scan-outer {
+  background: var(--cyan);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  padding: 1px;
+  border-radius: var(--radius);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+  flex-shrink: 0;
+}
+
+.btn-scan-outer:hover {
+  background: var(--cyan-bright);
+  box-shadow: 0 0 18px #00e5ff44, 0 0 4px #00e5ff22;
+}
+
+.btn-scan {
+  position: relative;
+  background: var(--chrome);
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  padding: 6px 14px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  border: none;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.btn-scan:hover {
+  background: #00e5ff22;
+  color: #ffffff;
+  text-shadow: 0 0 12px #00e5ffcc;
+}
+
+.btn-scan:active {
+  transform: scale(0.95);
+  transition: transform 0.08s ease;
+}
+
+.btn-label { position: relative; z-index: 1; }
+
+.btn-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, #ffffff10 50%, transparent 60%);
+  transform: translateX(-100%) skewX(-15deg);
+  transition: transform 0.6s ease;
+}
+
+.btn-scan:hover .btn-shimmer {
+  transform: translateX(100%) skewX(-15deg);
+}
+
+/* ── Controls row ────────────────────────────────────────────────── */
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Toggle */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.toggle-label input[type="checkbox"] { display: none; }
+
+.toggle-track {
+  width: 40px;
+  height: 22px;
+  background: var(--deep);
+  border-radius: 2px;
+  position: relative;
+  transition: all 0.25s ease;
+  clip-path: polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background: var(--text-faint);
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-label input:checked + .toggle-track {
+  box-shadow: inset 0 0 0 1px var(--cyan), 0 0 10px #00e5ff22;
+}
+
+.toggle-label input:checked + .toggle-track::after {
+  left: 21px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px #00e5ff88;
+}
+
+.toggle-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-sub);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Ghost buttons */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-sub);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+  color: var(--cyan);
+  border-color: #00e5ff22;
+  text-shadow: 0 0 6px #00e5ff44;
+}
+
+/* ── Subbar ──────────────────────────────────────────────────────── */
+
+.subbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+/* ── Stats inline ────────────────────────────────────────────────── */
+
+.stats-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.stats-inline.hidden { display: none; }
+
+.stat-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat-inline .stat-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-faint);
+}
+
+.stat-inline .stat-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cyan-bright);
+  text-shadow: 0 0 6px #00e5ff33;
+}
+
+.stat-sep {
+  width: 1px;
+  height: 15px;
+  background: var(--border);
+  flex-shrink: 0;
+}
