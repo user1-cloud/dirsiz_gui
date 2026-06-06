@@ -16,5 +16,6 @@
   "footerAnalyzed": "ANALYZED",
   "footerError": "ERROR",
   "loading": "loading ...",
-  "toastCapped": "Expansion capped at {0} nodes. Manually expand specific folders for deeper inspection."
+  "toastCapped": "Expansion capped at {0} nodes. Manually expand specific folders for deeper inspection.",
+  "upDir": "up"
 }

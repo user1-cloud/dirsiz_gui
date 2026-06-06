@@ -19,6 +19,7 @@ const pathInput      = $<HTMLInputElement>("pathInput");
 const scanBtn        = $<HTMLButtonElement>("scanBtn");
 const showHidden     = $<HTMLInputElement>("showHidden");
 const forceWalkdir   = $<HTMLInputElement>("forceWalkdir");
+const upDirBtn       = $<HTMLButtonElement>("upDirBtn");
 const collapseAllBtn = $<HTMLButtonElement>("collapseAll");
 const statsBar       = $<HTMLDivElement>("statsBar");
 const statSize       = $("statSize");
@@ -145,6 +146,24 @@ function domNodesClear(): void {
 scanBtn.addEventListener("click", doScan);
 pathInput.addEventListener("keydown", e => { if (e.key === "Enter") doScan(); });
 collapseAllBtn.addEventListener("click", () => collapseAll());
+upDirBtn.addEventListener("click", () => {
+  const p = pathInput.value.trim();
+  if (!p) return;
+  // Strip trailing separators
+  const cleaned = p.replace(/[\\/]+$/, "");
+  // Unix root "/" stripped to empty, or already at root
+  if (!cleaned) return;
+  const lastSep = Math.max(cleaned.lastIndexOf("\\"), cleaned.lastIndexOf("/"));
+  // No separator — can't go up (e.g. drive-letter-only "C:" or plain name)
+  if (lastSep < 0) return;
+  // Windows root (e.g. "C:\Users" → "C:\")
+  if (cleaned[lastSep - 1] === ":") { pathInput.value = cleaned.slice(0, lastSep + 1); }
+  // Unix root child (e.g. "/home" → "/")
+  else if (lastSep === 0) { pathInput.value = cleaned[0]; }
+  // Normal case (e.g. "/a/b" → "/a")
+  else { pathInput.value = cleaned.slice(0, lastSep); }
+  doScan();
+});
 langToggle.addEventListener("click", () => {
   toggleLang();
   stateMgr.setState(stateMgr.getState());

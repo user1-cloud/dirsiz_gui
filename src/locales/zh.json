@@ -16,5 +16,6 @@
   "footerAnalyzed": "分析完成",
   "footerError": "错误",
   "loading": "加载中 ...",
-  "toastCapped": "已达到展开上限 {0} 个节点，请手动展开特定文件夹查看。"
+  "toastCapped": "已达到展开上限 {0} 个节点，请手动展开特定文件夹查看。",
+  "upDir": "上一级"
 }
